@@ -75,7 +75,7 @@ class Segment:
     edge_sharpness: float = 2.0
     nvenc_preset: int = 1
     protocol: str = "Tcp"
-    transport: str = "wifi"          # "wifi", "rndis" (USB tethering network) or "adb" (USB adb forward)
+    transport: str = "wifi"          # "wifi", "ncm", "rndis" (USB tethering network) or "adb" (USB adb forward)
     packet_size: int = 1400          # ALVR connection.packet_size (bytes per shard; 1400 suits UDP only)
     decoder: str = ""                # "" = ALVR default (by MIME type); else a MediaCodec name
     low_latency: bool = False        # Android KEY_LOW_LATENCY on the decoder
@@ -1087,7 +1087,7 @@ def validate(segments):
         seen.add(s.label)
         if s.stack not in ("alvr", "vd"):
             raise ValueError(f"{s.label}: unknown stack {s.stack}")
-        if s.transport not in ("wifi", "rndis", "adb"):
+        if s.transport not in ("wifi", "ncm", "rndis", "adb"):
             raise ValueError(f"{s.label}: unknown transport {s.transport}")
         if not 500 <= s.packet_size <= 65000:
             raise ValueError(f"{s.label}: packet_size {s.packet_size} outside 500..65000")

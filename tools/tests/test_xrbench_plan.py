@@ -44,9 +44,13 @@ def test_unknown_transport_rejected_but_adb_is_known():
     pl.validate([pl.Segment("T0", "alvr", transport="adb")])
 
 
+def test_ncm_transport_is_known():
+    pl.validate([pl.Segment("T1", "alvr", transport="ncm")])
+
+
 def test_unknown_transport_rejected():
     with pytest.raises(ValueError, match="transport"):
-        pl.validate([pl.Segment("T1", "alvr", transport="ncm")])
+        pl.validate([pl.Segment("T2", "alvr", transport="usbnet")])
 
 
 def test_vd_plan_is_available_separately():

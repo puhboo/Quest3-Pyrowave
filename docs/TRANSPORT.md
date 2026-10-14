@@ -63,7 +63,9 @@ recipe from the adb shell:
 4. The client must bind its sockets to the Ethernet network (`android_setsocknetwork`), because
    Wi-Fi stays the default network.
 
-Since NCM gives no throughput gain, the product does not use it.
+Since NCM gives no throughput gain in current measurements, it is capability-gated and optional:
+ADB forwarding remains the default wired path, and tooling falls back to ADB with explicit
+diagnostics when NCM setup is unavailable.
 
 ## Wi-Fi 6E (6 GHz, 2401 Mbps PHY, RSSI −44 dBm)
 
