@@ -6892,7 +6892,7 @@ index a0fd36fa9b8d38eb8f72e379fd880ea4d4443bde..912fa275be84098e38d9322b4e1ad0ae
 +            xr_session.clone(), Rc::clone(&graphics_context), Arc::clone(&interaction_context)
 +        ).map_err(|error| error!("Performance overlay unavailable: {error:?}")).ok();
          let lobby_body_tracking_config = BodyTrackingSourcesConfig {
-             body_tracking_fb: if exts.fb_body_tracking { Switch::Enabled(Default::default()) } else { Switch::Disabled },
+             body_tracking_fb: Switch::Disabled, },
              body_tracking_bd: Switch::Enabled(BodyTrackingBDConfig::BodyTracking {
 @@ -412,14 +533,29 @@ pub fn entry_point() {
              .select_sources(&lobby_interaction_sources);
