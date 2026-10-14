@@ -3,6 +3,9 @@
 ALVR 20.13 includes the [native wired mode introduced in 20.12](https://github.com/alvr-org/ALVR/wiki/ALVR-wired-setup-%28ALVR-over-USB%29).
 The dashboard forwards control/video TCP ports through ADB; no Meta PC runtime is needed.
 
+Quest 3S uses the same wired baseline path. Quest 3-only display scaling and forced extended-rate
+helpers remain disabled on 3S.
+
 1. Use a USB data cable and a USB 3 port. Enable Quest Developer Mode and accept USB debugging.
 2. Start our dashboard and SteamVR, then enable **Devices → Wired Connection**.
 3. This fork defaults **Connection → Wired Client Type** to Custom:
@@ -29,6 +32,20 @@ Since `.63` (alpha.9), wired mode uses only an **online adb device attached over
   connecting.
 - When no USB device is ready, the server goes on to manual IPs and discovery and can stream over
   the network. Before `.63`, the wired entry stopped it from ever trying the network.
+
+## USB NCM (capability-gated)
+
+The repository now includes capability-gated USB NCM setup logic for tooling workflows. If Quest
+firmware or Windows adapter discovery does not expose a usable NCM link, tooling logs the reason
+and falls back to the existing ADB-forwarded TCP path instead of silently switching.
+
+Manual prerequisites for NCM experiments:
+
+1. Headset USB function exposes `ncm,adb` and `usb0` gets an IPv4 address.
+2. Windows shows an **Up** NCM-class adapter.
+3. Headset Wi-Fi is disabled during USB-only measurements.
+
+If any prerequisite is missing, treat the session as ADB USB and use the ADB diagnostics below.
 
 ## Parallel wired video connections
 

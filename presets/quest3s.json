@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "device": "Quest 3S",
+  "pyrowave": {
+    "bitrates_mbps": [200, 300, 400, 600, 800, 1000],
+    "refresh_targets_hz": [72, 90, 120],
+    "start_hz": 72,
+    "wavelet": "Haar",
+    "decode_paths": ["Auto", "Compute", "Fragment"],
+    "requested_eye_resolution": [1832, 1920],
+    "aligned_eye_resolution": [1856, 1920],
+    "chroma": "420",
+    "chroma_options": ["420", "444"],
+    "range": "full",
+    "transport": "Tcp",
+    "requires_confirmed_runtime_rate": true,
+    "foveated_encoding": false,
+    "clientside_foveation": false,
+    "start_mbps": 400,
+    "baseline_status": "conservative_candidate_unverified_on_hardware",
+    "candidate_profiles": [
+      { "mbps": 300, "hz": 72, "chroma": "420" },
+      { "mbps": 600, "hz": 90, "chroma": "420" }
+    ],
+    "experimental_profiles": [
+      {
+        "mbps": 800,
+        "hz": 120,
+        "chroma": "420",
+        "sustained_fps_verified": false
+      }
+    ]
+  },
+  "comparisons": {
+    "codecs": ["H264", "Hevc", "AV1"],
+    "target_mbps": 200,
+    "matched_resolution": true
+  },
+  "measurements_claimed": false,
+  "hardware_validation": "Quest 3S performance and body-tracking quality are unverified pending on-device measurements."
+}

@@ -2,7 +2,7 @@
 
 # Quest3-Pyrowave
 
-**PCVR streaming for Meta Quest 3, with PyroWave wavelet decoding directly on the Adreno GPU.**
+**PCVR streaming for Meta Quest 3/3S, with PyroWave wavelet decoding directly on the Adreno GPU.**
 
 An experimental ALVR fork for high-quality, low-latency streaming over USB and fast local networks.
 Vulkan handles wavelet decoding; ALVR supplies SteamVR integration, tracking, controllers and audio.
@@ -84,7 +84,7 @@ The links below always fetch the latest release.
 
 | Download | Purpose |
 | --- | --- |
-| 🥽 [**Quest APK**](https://github.com/JMS1717/Quest3-Pyrowave/releases/latest/download/Quest3-Pyrowave-dev.apk) | Install on the Quest 3. |
+| 🥽 [**Quest APK**](https://github.com/JMS1717/Quest3-Pyrowave/releases/latest/download/Quest3-Pyrowave-dev.apk) | Install on Quest 3 or Quest 3S. |
 | 🖥️ [**Windows server ZIP**](https://github.com/JMS1717/Quest3-Pyrowave/releases/latest/download/Quest3-Pyrowave-Windows.zip) | Dashboard, SteamVR driver and required bundled files. |
 | 🔐 [**SHA-256 checksums**](https://github.com/JMS1717/Quest3-Pyrowave/releases/latest/download/SHA256SUMS.txt) | Verify the downloads. |
 
@@ -115,7 +115,7 @@ Tests-only runs produce no installable pair.
 
 ### What you need
 
-- **Meta Quest 3** with Developer Mode and USB debugging enabled for sideloading.
+- **Meta Quest 3 or Quest 3S** with Developer Mode and USB debugging enabled for sideloading.
 - **Windows PC** with SteamVR and a Vulkan GPU/driver that supports the required Vulkan–D3D11
   interop. SteamVR and the encoder must use the same GPU.
 - **USB data cable**, preferably on a USB 3 port, or a fast LAN with the PC on Ethernet.
@@ -146,6 +146,7 @@ Tests-only runs produce no installable pair.
    | Profile | Per-eye stream | Pick it for |
    | --- | --- | --- |
    | **Quest 3 Quality 120 Hz** (recommended) | 2272 × 2432 (110 %), CDF 5/3, 1500 Mbps | USB: the best balance of detail, smoothness and latency |
+   | **Quest 3S Starter 72 Hz** (conservative) | 1856 × 1920, Haar, 300 Mbps | Quest 3S: safe baseline profile (`presets/quest3s.json`), hardware validation pending |
    | **Quest 3 Godlike 90 Hz** | 3072 × 3216 (full size), CDF 5/3, 1500 Mbps | USB: the cleanest full-size image; sims, racing, slow games |
    | **Quest 3 Godlike 120 Hz** | 3072 × 3216, Haar, 1500 Mbps | USB: the most detail at 120 Hz, a few FPS short of 120; faint blocks in gradients |
    | **Quest 3 Colour 4:4:4 120 Hz** | 110 %, Haar, full colour, 1500 Mbps | USB: crisp coloured text, menus and cockpits |
@@ -166,6 +167,7 @@ covers prerequisites, controller emulation and restoring another driver.
 | Connection | Setup | How to confirm it |
 | --- | --- | --- |
 | 🔌 **USB / TCP** | Plug in a data cable and enable **Devices → Wired Connection**. Use **PyroWave TCP** and the custom client package above. | The wired client is Streaming, the server peer is `127.0.0.1`, and ADB forwards include ports 9943/9944. [USB guide →](docs/USB.md) |
+| 🔌 **USB / NCM (optional)** | Enable USB NCM where the headset firmware and Windows adapter expose it; otherwise fallback stays on ADB-forwarded TCP. | Check transport diagnostics and fallback reason in logs before treating a run as NCM. [USB guide →](docs/USB.md) |
 | 📡 **Wi-Fi / LAN** | PC on Ethernet, headset on a nearby 6 GHz (Wi-Fi 6E) access point. Trust the headset in **Devices**, or add its IP address. Use a constant **1000 Mbps** (1250 at most), or Auto with a maximum. | The client is Streaming from the headset's LAN address. Watch the overlay's network latency. [Wi-Fi measurements →](docs/WIRELESS.md) |
 
 > [!NOTE]

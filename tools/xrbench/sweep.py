@@ -978,14 +978,15 @@ class Transport:
         self.link_results = {}
 
     def ip(self, transport):
-        return {"wifi": self.wifi_ip, "rndis": self.rndis_ip, "adb": "127.0.0.1"}[transport]
+        return {"wifi": self.wifi_ip, "ncm": self.rndis_ip, "rndis": self.rndis_ip, "adb": "127.0.0.1"}[transport]
 
     def enter(self, transport):
         if transport == self.current:
             return self.ip(transport)
+        effective_transport = transport
         # Both USB transports need the cable, which wireless adb deliberately does without. Say so
         # plainly rather than failing later inside svc/netsh with something unrecognisable.
-        if transport in ("rndis", "adb") and wirelessmod.is_wireless(device_serial()):
+        if transport in ("ncm", "rndis", "adb") and wirelessmod.is_wireless(device_serial()):
             raise RuntimeError(
                 f"transport '{transport}' needs the USB cable, but adb is connected over Wi-Fi "
                 f"({device_serial()}). Wi-Fi measured faster than both anyway -- 1124 Mbps against "
@@ -1003,21 +1004,27 @@ class Transport:
             time.sleep(3)
             if headset_ipv4("wlan0"):
                 raise RuntimeError("headset Wi-Fi still has an address; stream would not be USB-only")
+        elif transport == "ncm":
+            self._enter_ncm_with_fallback()
+            effective_transport = self.current or transport
         else:
             self._enter_rndis()
-        self.current = transport
-        log(f"transport {transport}: headset at {self.ip(transport)}")
+        self.current = effective_transport
+        if effective_transport != transport:
+            log(f"transport {transport}: fallback to {effective_transport}")
+        log(f"transport {self.current}: headset at {self.ip(self.current)}")
         try:
-            if transport == "adb":
+            if self.current == "adb":
                 adb("forward", "tcp:5001", "tcp:5001")
-            self.link_results[transport] = link_test(self.ip(transport))
-            if transport == "adb":
+            self.link_results[transport] = {"effective_transport": self.current,
+                                            **link_test(self.ip(self.current))}
+            if self.current == "adb":
                 adb("forward", "--remove", "tcp:5001", check=False)
             log(f"link test {transport}: {self.link_results[transport]}")
         except Exception as exc:
             self.link_results[transport] = {"error": str(exc)}
             log(f"link test {transport} failed: {exc}")
-        return self.ip(transport)
+        return self.ip(self.current)
 
     def _enter_rndis(self):
         adb("shell", "svc", "usb", "setFunctions", "rndis", check=False, timeout=30)
@@ -1058,6 +1065,44 @@ class Transport:
         if headset_ipv4("wlan0"):
             raise RuntimeError("headset Wi-Fi still has an address; stream would not be USB-only")
 
+    def _ncm_adapter(self):
+        probe = r"""$a = Get-NetAdapter | ? { $_.Status -eq 'Up' -and ($_.InterfaceDescription -match 'NCM' -or $_.InterfaceDescription -match 'UsbNcm' -or $_.InterfaceDescription -match 'CDC NCM') }; $a.Name"""
+        return _ps(probe)
+
+    def _enter_ncm(self):
+        adb("shell", "svc", "usb", "setFunctions", "ncm,adb", check=False, timeout=30)
+        deadline = time.time() + 45
+        alias = ""
+        while time.time() < deadline:
+            time.sleep(2)
+            try:
+                self.rndis_ip = headset_ipv4("usb0")
+            except Exception:
+                self.rndis_ip = None
+            alias = self._ncm_adapter()
+            if self.rndis_ip and alias:
+                break
+        else:
+            raise RuntimeError("USB NCM did not come up (no usb0 address or no Windows NCM adapter)")
+        adb("shell", "svc", "wifi", "disable", check=False)
+        time.sleep(3)
+        if headset_ipv4("wlan0"):
+            raise RuntimeError("headset Wi-Fi still has an address; stream would not be USB-only")
+        log(f"usb ncm adapter: {alias.splitlines()[0]}")
+
+    def _enter_ncm_with_fallback(self):
+        try:
+            self._enter_ncm()
+        except Exception as exc:
+            log(f"USB NCM unavailable ({exc}); falling back to adb-forwarded TCP")
+            for port in (9943, 9944):
+                adb("forward", f"tcp:{port}", f"tcp:{port}")
+            adb("shell", "svc", "wifi", "disable", check=False)
+            time.sleep(3)
+            if headset_ipv4("wlan0"):
+                raise RuntimeError("NCM fallback selected but headset Wi-Fi still has an address")
+            self.current = "adb"
+
     def restore(self):
         """Wi-Fi back on. The headset stays in RNDIS USB mode on purpose: switching back to the
         default USB mode re-enumerates ADB on an interface Windows adb does not pick up (seen
@@ -1065,7 +1110,7 @@ class Transport:
         if self.current == "adb":
             for port in (9943, 9944):
                 adb("forward", "--remove", f"tcp:{port}", check=False)
-        if self.current in ("rndis", "adb"):
+        if self.current in ("ncm", "rndis", "adb"):
             adb("shell", "svc", "wifi", "enable", check=False)
             log("restored headset Wi-Fi (USB left in RNDIS mode; replug to return to default)")
 

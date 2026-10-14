@@ -10,6 +10,7 @@ import argparse
 import json
 from pathlib import Path
 from .refresh_scaling import Device
+from .models import require_quest3_only
 
 PROPERTY = 'debug.oculus.gpuLevel'
 LEVELS = range(0, 8)
@@ -54,8 +55,7 @@ def main():
     sub.add_parser('restore').add_argument('--state', required=True)
     args = parser.parse_args()
     device = Device(args.adb, args.serial)
-    if device.getprop('ro.product.model') != 'Quest 3':
-        raise RuntimeError('Expected Quest 3')
+    require_quest3_only(device.getprop('ro.product.model'), 'GPU level override')
     if args.command == 'enable':
         enable(device, Path(args.state), args.level)
     elif args.command == 'restore':

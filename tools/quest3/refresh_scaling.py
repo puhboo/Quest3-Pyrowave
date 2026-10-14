@@ -13,6 +13,7 @@ import re
 import time
 from pathlib import Path
 from .bench import adb_run
+from .models import require_quest3_only
 
 PROPERTIES = ('debug.oculus.forceDisplayScaling', 'debug.oculus.refreshRate')
 # Rates above this exist only in the scaled panel mode.
@@ -132,8 +133,7 @@ def main():
     args = parser.parse_args()
     device = Device(args.adb, args.serial)
     model = device.getprop('ro.product.model')
-    if model != 'Quest 3':
-        raise RuntimeError(f'Expected Quest 3, found {model}')
+    require_quest3_only(model, 'refresh scaling')
     mode = None
     if args.command == 'enable':
         mode = enable(device, Path(args.state))

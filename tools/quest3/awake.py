@@ -1,4 +1,4 @@
-"""Keep Quest 3 awake temporarily, then restore physical proximity control."""
+"""Keep Quest 3/3S awake temporarily, then restore physical proximity control."""
 import argparse
 from datetime import datetime, timezone
 import json
@@ -8,6 +8,7 @@ import subprocess
 import sys
 import time
 from .bench import adb_run
+from .models import require_quest3_family
 
 def restore(path):
     state=json.loads(path.read_text())
@@ -31,8 +32,7 @@ def main():
         time.sleep(max(0,state['restore_at_epoch_s']-time.time()))
         restore(path);return
     if not 1<=args.minutes<=120:parser.error('Use 1–120 minutes')
-    if adb_run(args.adb,'shell','getprop','ro.product.model').strip()!='Quest 3':
-        raise ValueError('Expected Quest 3')
+    require_quest3_family(adb_run(args.adb,'shell','getprop','ro.product.model').strip(), 'awake helper')
     state={'adb':str(Path(args.adb).resolve()) if Path(args.adb).is_file() else args.adb,
         'device':adb_run(args.adb,'get-serialno').strip(), 'status':'pending',
         'restore_at_epoch_s':time.time()+args.minutes*60,

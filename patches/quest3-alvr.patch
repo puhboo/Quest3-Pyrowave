@@ -6872,7 +6872,7 @@ index a0fd36fa9b8d38eb8f72e379fd880ea4d4443bde..912fa275be84098e38d9322b4e1ad0ae
 -            refresh_rates,
 -            foveated_encoding: galaxy_xr || platform != Platform::Unknown,
 +            refresh_rates: refresh_rates.clone(),
-+            foveated_encoding: platform == Platform::Quest3,
++            foveated_encoding: matches!(platform, Platform::Quest3 | Platform::Quest3S),
              encoder_high_profile: galaxy_xr || platform != Platform::Unknown,
              encoder_10_bits: galaxy_xr || platform != Platform::Unknown,
              encoder_av1: matches!(
